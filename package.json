@@ -1,0 +1,39 @@
+{
+  "name": "video-to-summary",
+  "version": "1.0.0",
+  "description": "视频自动处理：下载 → 转录 → 总结",
+  "main": "processor.js",
+  "scripts": {
+    "install": "node install-deps.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "video",
+    "transcribe",
+    "summary",
+    "ai",
+    "openclaw",
+    "skill"
+  ],
+  "author": "阿淘",
+  "license": "MIT",
+  "dependencies": {
+    "@marswave/coli": "^1.0.0"
+  },
+  "systemDependencies": {
+    "python": ">=3.8",
+    "ffmpeg": ">=4.0",
+    "yt-dlp": ">=2024.0.0"
+  },
+  "openclaw": {
+    "skill": true,
+    "category": "media",
+    "emoji": "🎥",
+    "commands": [
+      "/视频总结",
+      "/video-summary",
+      "处理这个视频",
+      "下载并总结"
+    ]
+  }
+}
