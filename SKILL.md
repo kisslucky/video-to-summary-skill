@@ -21,6 +21,7 @@ Turn a video page, media file, or transcript source into transcript-backed notes
 - OpenClaw users should route through `web-access` when direct download is weak, blocked, or login-gated.
 - Hermes users can apply the same workflow by mapping `web-access` to browser tools plus `web_search` / `web_extract`.
 - `browser-troubleshooting` is the fallback when CDP or browser connectivity is the blocker, not the video source itself.
+- `linked-source-routing` is a useful front-door skill when the user supplied one or more links and the acquisition path is still unclear.
 
 ## Core Rules
 
@@ -45,6 +46,7 @@ Use the minimum toolchain that can complete the job:
 
 | Need | Route |
 | --- | --- |
+| supplied link with unclear acquisition path | `linked-source-routing` |
 | public Bilibili / normal media page | local `processor.py` |
 | page requires cookies or signed headers | local `processor.py` with `--cookies-from-browser`, `--cookies-file`, or `--referer` |
 | captions already visible on the page | `web-access` to collect captions, then `processor.py --transcript-file ...` |
