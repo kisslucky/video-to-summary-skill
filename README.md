@@ -1,157 +1,62 @@
-# 🎥 Video to Summary Skill
+# Video to Summary
 
-**一键安装视频处理技能**
+将视频链接处理为本地交付物：媒体文件、音频、文字稿，以及一份可继续加工的摘要草稿。
 
----
+这个仓库现在聚焦“Skill 本体”，不再把后台服务、演示接口和运行产物混在主流程里。
 
-## 🚀 快速安装
+## 当前定位
+
+- 适合：视频下载、音频提取、语音转写、摘要草稿生成
+- 不适合：直接当成完整 SaaS 服务或长期运行的后台队列
+- 当前状态：已完成本地清理，适合继续朝公开 Skill 方向整理；暂不建议在未进一步拆分前作为最终公开版本发布
+
+## 核心依赖
+
+- `python >= 3.8`
+- `yt-dlp`
+- `ffmpeg`
+- `coli`
+
+## 快速开始
 
 ```bash
-cd D:\openclaw-workspace\skills\video-to-summary
-node install-deps.js
+python processor.py "<video-url>"
 ```
 
----
+如果是需要登录态的平台，可追加：
 
-## 📦 依赖项
-
-### 自动安装
-运行 `node install-deps.js` 会自动安装：
-
-1. **Python 依赖**
-   - yt-dlp（视频下载）
-   - requests（HTTP 请求）
-
-2. **Node.js 依赖**
-   - @marswave/coli（语音识别）
-
-3. **系统工具**
-   - ffmpeg（音频处理）
-
-### 手动安装（可选）
-
-**Python 依赖**：
 ```bash
-pip install yt-dlp requests
+python processor.py "<video-url>" --cookies-from-browser chrome
 ```
 
-**Node.js 依赖**：
-```bash
-npm install -g @marswave/coli
-```
+## 输出结果
 
-**ffmpeg**：
-```bash
-# Windows
-winget install ffmpeg
+每次运行都会生成独立任务目录，默认在 `outputs/<job-id>/` 下，包含：
 
-# macOS
-brew install ffmpeg
+- `video.*`
+- `audio.m4a`
+- `transcript.txt`
+- `summary.md`
+- `result.json`
 
-# Linux
-sudo apt install ffmpeg
-```
+## Hermes 适配
 
----
+适用于 Hermes，前提是 Hermes 会话具备终端能力并允许调用本地依赖。
 
-## 💡 使用方式
+- 适配方式：把仓库加入 Hermes 的外部 Skill 目录
+- 运行方式：调用 `${HERMES_SKILL_DIR}/processor.py` 或在技能目录内直接运行 `python processor.py`
+- 能力边界：Hermes 负责读文字稿并决定是否重写摘要；脚本本身只产出草稿和中间文件
 
-### 方式 1：飞书消息
-```
-发送视频链接给阿淘
-```
+## OpenClaw 适配
 
-### 方式 2：命令行
-```bash
-node processor.js [视频 URL]
-```
+适用于 OpenClaw，但建议先把 `backend-api.py` 相关服务能力拆到独立目录或独立仓库，再做正式公开发布。
 
-### 方式 3：OpenClaw 命令
-```
-/视频总结 [URL]
-```
+## 后续建议
 
----
+1. 把 `backend-api.py` 拆成独立 demo/service 包
+2. 增加更多平台说明和 Cookie 指引
+3. 给摘要阶段接入真正的模型总结，而不只依赖本地草稿
 
-## 📁 输出文件
+## License
 
-处理完成后输出 4 个文件：
-
-1. `video.mp4` - 完整视频
-2. `audio.m4a` - 纯音频
-3. `full_transcript.txt` - 完整文字稿
-4. `summary.md` - 精华总结
-
----
-
-##  支持平台
-
-| 平台 | 登录要求 | 说明 |
-|------|---------|------|
-| 哔哩哔哩 | ❌ 无需 | 直接处理 |
-| YouTube | ❌ 无需 | 直接处理 |
-| 抖音 | ✅ 需要 | Chrome 登录后关闭 |
-| 快手 | ✅ 需要 | Chrome 登录后关闭 |
-| 小红书 | ✅ 需要 | Chrome 登录后关闭 |
-
----
-
-## 📊 处理时间
-
-| 视频时长 | 预计耗时 |
-|---------|---------|
-| 5 分钟 | ~2 分钟 |
-| 15 分钟 | ~5 分钟 |
-| 30 分钟 | ~10 分钟 |
-| 60 分钟 | ~20 分钟 |
-
----
-
-## 🛠️ 故障排查
-
-### 下载失败
-- 检查链接是否有效
-- 检查网络连接
-- 会员视频需要 Cookie
-
-### 转录失败
-- 检查 ffmpeg 是否安装
-- 检查 coli 是否安装
-- 音频过长会自动分段
-
-### 进程被终止
-- 音频超过 3 分钟会自动分段
-- 增加超时时间设置
-
----
-
-## 📦 打包发布
-
-### 打包
-```bash
-clawhub pack video-to-summary
-```
-
-### 发布
-```bash
-clawhub publish video-to-summary
-```
-
-### 安装
-```bash
-# 从 ClawHub
-clawhub install video-to-summary
-
-# 从 GitHub
-clawhub install video-to-summary --repo kisslucky_taotao/video-to-summary
-```
-
----
-
-**版本**：1.0.0  
-**作者**：阿淘  
-**许可证**：MIT
-
----
-
-*完整文档：SKILL-FULL.md*
+MIT
