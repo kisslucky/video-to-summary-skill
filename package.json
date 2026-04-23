@@ -2,10 +2,10 @@
   "name": "video-to-summary",
   "version": "1.0.0",
   "description": "视频自动处理：下载 → 转录 → 总结",
-  "main": "processor.js",
+  "main": "processor.py",
   "scripts": {
     "install": "node install-deps.js",
-    "test": "node test.js"
+    "test": "python -c \"import py_compile; py_compile.compile('processor.py', doraise=True); py_compile.compile('backend-api.py', doraise=True)\""
   },
   "keywords": [
     "video",
