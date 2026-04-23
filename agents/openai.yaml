@@ -1,6 +1,6 @@
 interface:
   display_name: "Video to Summary"
-  short_description: "Download a video, transcribe it locally, and draft a summary"
-  default_prompt: "Use $video-to-summary to turn this video URL into transcript artifacts and a draft summary, then refine the summary if needed."
+  short_description: "Acquire video content via direct download or browser interaction, then draft transcript-backed notes"
+  default_prompt: "Use $video-to-summary to get a transcript-backed summary from this video source. If direct download fails, route through $web-access and CDP, then feed the extracted media or transcript back into $video-to-summary."
 policy:
   allow_implicit_invocation: true
