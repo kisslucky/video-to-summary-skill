@@ -58,6 +58,30 @@ def ensure_dependency(command: list[str], label: str) -> None:
     run_command(command, f"Checking dependency: {label}", timeout=30)
 
 
+def resolve_command(*candidates: str) -> str:
+    search_paths = [
+        os.environ.get("VIDEO_TO_SUMMARY_COLI"),
+        shutil.which(candidates[0]) if candidates else None,
+    ]
+
+    user_profile = os.environ.get("USERPROFILE", "")
+    for candidate in candidates:
+        search_paths.extend(
+            [
+                shutil.which(candidate),
+                str(Path(user_profile) / ".npm-global" / candidate) if user_profile else None,
+                str(Path(user_profile) / ".npm-global" / f"{candidate}.cmd") if user_profile else None,
+                str(Path(user_profile) / ".npm-global" / f"{candidate}.exe") if user_profile else None,
+            ]
+        )
+
+    for path in search_paths:
+        if path and Path(path).exists():
+            return str(Path(path))
+
+    raise CommandError(f"Missing dependency: {candidates[0] if candidates else 'command'}")
+
+
 def create_job_dir(output_root: Path) -> Path:
     job_id = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8]
     job_dir = output_root / job_id
@@ -81,12 +105,21 @@ def build_download_commands(
     referer: str | None,
 ) -> list[list[str]]:
     common = ["yt-dlp", "--no-playlist", "--no-warnings"]
+    normalized_source = source_url.lower()
+    auto_referer = referer
     if browser:
         common += ["--cookies-from-browser", browser]
     if cookies_file:
         common += ["--cookies", cookies_file]
-    if referer:
-        common += ["--add-header", f"Referer:{referer}"]
+    if "bilibili.com" in normalized_source or "b23.tv" in normalized_source:
+        common += [
+            "--add-header",
+            "User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        ]
+        if not auto_referer:
+            auto_referer = "https://www.bilibili.com/"
+    if auto_referer:
+        common += ["--add-header", f"Referer:{auto_referer}"]
 
     return [
         common
@@ -183,16 +216,17 @@ def extract_text_from_coli_output(raw_output: str) -> str:
 
 
 def transcribe_audio(audio_path: Path, transcript_path: Path) -> str:
+    coli_bin = resolve_command("coli")
     try:
         completed = run_command(
-            ["coli", "asr", str(audio_path), "--json"],
+            [coli_bin, "asr", str(audio_path), "--json"],
             "Transcribing audio with coli",
             timeout=1800,
         )
         transcript_text = extract_text_from_coli_output(completed.stdout)
     except CommandError:
         completed = run_command(
-            ["coli", "asr", str(audio_path)],
+            [coli_bin, "asr", str(audio_path)],
             "Retrying transcription with plain output",
             timeout=1800,
         )
@@ -335,7 +369,7 @@ def main() -> int:
     else:
         ensure_dependency(["python", "--version"], "python")
         ensure_dependency(["ffmpeg", "-version"], "ffmpeg")
-        ensure_dependency(["coli", "--help"], "coli")
+        ensure_dependency([resolve_command("coli"), "--help"], "coli")
 
         if mode == "media-file":
             source_path = Path(args.media_file).resolve()
